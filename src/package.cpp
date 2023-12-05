@@ -26,7 +26,6 @@ Package &Package::operator=(Package &&p){
     if(id_ != -1){
         freed_IDs.insert(id_);
         assigned_IDs.erase(id_);
-        return *this;
     }
     id_ = p.id_;
     p.id_ = -1;
