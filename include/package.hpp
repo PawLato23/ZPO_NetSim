@@ -8,11 +8,11 @@ class Package{
 public:
     Package();
 
-    Package(ElementID id) : id_(id) {assigned_IDs.insert(id);}
+    Package(ElementID id) : id_(id) {assigned_IDs.insert(id);};
 
-    Package(Package &&) ;
+    Package(Package &&package) noexcept;
 
-    Package &operator=(Package &&);
+    Package & operator=(Package &&package) noexcept;
 
     ElementID get_id() const { return id_; }
 

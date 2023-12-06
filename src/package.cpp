@@ -5,7 +5,10 @@ std::set<ElementID> Package::freed_IDs = {};
 
 Package::Package() {
     ElementID new_id;
-    if(!freed_IDs.empty()){
+    if (assigned_IDs.empty() && freed_IDs.empty()){
+        new_id=1;
+    }
+    else if(!freed_IDs.empty()){
         new_id = *freed_IDs.begin();
         freed_IDs.erase(new_id);
     }
@@ -16,13 +19,13 @@ Package::Package() {
     id_ = new_id;
 }
 
-Package::Package(Package &&p){
+Package::Package(Package &&p) noexcept {
     id_ = p.id_;
     p.id_ = -1;
 }
 
 
-Package &Package::operator=(Package &&p){
+Package &Package::operator=(Package &&p) noexcept{
     if(id_ != -1){
         freed_IDs.insert(id_);
         assigned_IDs.erase(id_);
