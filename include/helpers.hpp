@@ -13,6 +13,8 @@ extern double default_probability_generator();
 extern double single_vector_generator();
 extern double repeat_vector_generator();
 extern double single_value_generator();
+extern double normal_distribution_generator();
+extern double poisson_generator();
 
 extern ProbabilityGenerator probability_generator;
 
