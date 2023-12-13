@@ -38,17 +38,19 @@ private:
     preferences_t preferences_;
     ProbabilityGenerator pg_;
 };
+
 class PackageSender{
 public:
+    PackageSender() = default;
     PackageSender(PackageSender &&package_sender)=default;
     void send_package();
     const std::optional<Package> &get_sending_buffer() const {return bufor_;}
+    ReceiverPreferences receiver_preferences_;
 protected:
     void push_package(Package &&package) {bufor_.emplace(package.get_id());}
     std::optional<Package> bufor_=std::nullopt;
-private:
-    ReceiverPreferences receiver_preferences_;
 };
+
 class Ramp : public PackageSender{
 public:
     Ramp(ElementID id, TimeOffset di) : PackageSender(),id_(id),di_(di){}
@@ -61,7 +63,7 @@ private:
     Time t_;
     std::optional<Package> bufor_=std::nullopt;
 };
-class Worker : public IPackageQueue, public PackageSender{
+class Worker : public IPackageReceiver, public PackageSender{
 public:
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q) : PackageSender(), id_(id), pd_(pd), q_(std::move(q)) {}
     void do_work(Time t);
@@ -81,7 +83,7 @@ private:
     std::unique_ptr<IPackageQueue> q_;
     std::optional<Package> bufor_=std::nullopt;
 };
-class Storehouse : public IPackageStockpile, public IPackageReceiver{
+class Storehouse : public IPackageReceiver{
 public:
     Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d = std::make_unique<PackageQueue>(PackageQueueType::FIFO)) : id_(id), d_(std::move(d)) {}
     void receive_package(Package &&p) override;
