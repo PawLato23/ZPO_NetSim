@@ -52,5 +52,25 @@ double single_value_generator() {
     return x;
 }
 
+double normal_distribution_generator(){
+    std::normal_distribution<double> d{500.0, 125.0};
+    // draw a sample from the normal distribution and round it to an integer
+    auto random_int = [&d, &rng]{ return std::round(d(rng)); };
+    double x;
+    do{
+        x = random_int()/1000;
+    }while(x > 1 or x < 0);
+    return x;
+}
+double poisson_generator(){
+    std::poisson_distribution<> d(5);
+    std::poisson_distribution<> dd(5);
+    std::poisson_distribution<> ddd(5);
+    double poisson;
+    do{
+        poisson = (double)d(rng)/10+(double)dd(rng)/100+(double)ddd(rng)/1000;
+    }while(poisson>1 or poisson<0);
+    return poisson;
+}
 std::function<double()> probability_generator = default_probability_generator;
 
