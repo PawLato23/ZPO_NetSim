@@ -15,20 +15,6 @@ double default_probability_generator() {
     return std::generate_canonical<double, 10>(rng);
 }
 
-double single_vector_generator() {
-    // Wartości z wektora brane są od początku (kolejka)
-    static std::vector<double> pse_pse_liczby = {}; //WPISZ WEKTOR
-    if(pse_pse_liczby.size() > 0){
-        double x = pse_pse_liczby[0];
-        pse_pse_liczby.erase(pse_pse_liczby.begin());
-        if(x < 0)       //odwraca znak, jeśli zly
-            x = -x;
-        for(double iter = 0; x > 1; x/=10); //zabezpiecza, żeby liczba była z przedziału [0 1] jesli liczba jest za duza
-        return x;
-    }
-    return 0;
-}
-
 double repeat_vector_generator() {
     static std::vector<double> pse_pse_liczby = {0.2, 0.1, 0.3, 0.7}; //WPISZ WEKTOR
     static std::vector<double> cur_queue;
@@ -52,25 +38,5 @@ double single_value_generator() {
     return x;
 }
 
-double normal_distribution_generator(){
-    std::normal_distribution<double> d{500.0, 125.0};
-    // draw a sample from the normal distribution and round it to an integer
-    auto random_int = [&d, &rng]{ return std::round(d(rng)); };
-    double x;
-    do{
-        x = random_int()/1000;
-    }while(x > 1 or x < 0);
-    return x;
-}
-double poisson_generator(){
-    std::poisson_distribution<> d(5);
-    std::poisson_distribution<> dd(5);
-    std::poisson_distribution<> ddd(5);
-    double poisson;
-    do{
-        poisson = (double)d(rng)/10+(double)dd(rng)/100+(double)ddd(rng)/1000;
-    }while(poisson>1 or poisson<0);
-    return poisson;
-}
 std::function<double()> probability_generator = default_probability_generator;
 
