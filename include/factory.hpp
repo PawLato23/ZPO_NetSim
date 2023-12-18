@@ -43,6 +43,7 @@ private:
 };
 
 class Factory{
+public:
         //Ramp related methods
     void add_ramp(Ramp&& new_ramp) {_Ramp_collection.add(std::move(new_ramp));}
     void remove_ramp(ElementID id) {_Ramp_collection.remove_by_id(id);};
@@ -66,9 +67,9 @@ class Factory{
     NodeCollection<Storehouse>::const_iterator storehouse_cend() const {return _Storehouse_collection.cend();}
         //Whole factory methods
     bool is_consistent();
-    void do_deliveries(Time t);
+    void do_deliveries(Time t) {for(auto& ramp : _Ramp_collection){ramp.deliver_goods(t);}};
     void do_package_passing();
-    void do_work(Time t);
+    void do_work(Time t) {for(auto& worker : _Worker_collection){worker.do_work(t);}};
 
 private:
     template<typename Node> //Nie jestem tego pewny, czy to czegoś nie wywali
