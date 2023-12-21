@@ -8,3 +8,11 @@ void Factory::do_package_passing() {
         ramp.send_package();
     }
 }
+
+Factory load_factory_structure(std::istream& is){
+
+}
+
+Factory save_factory_structure(Factory& factory, std::ostream& os){
+
+}
