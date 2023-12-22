@@ -17,12 +17,13 @@ set(SOURCE_FILES
         )
 
 add_executable(NetSim ${SOURCE_FILES} main.cpp)
+target_compile_definitions(NetSim PUBLIC EXERCISE_ID=EXERCISE_ID_FACTORY)
 
 # Google Testing Framework
 
 set(SOURCES_FILES_TESTS
         test/test_Factory.cpp
-        #test/test_factory_io.cpp
+        test/test_factory_io.cpp
         test/test_nodes.cpp
         test/test_package.cpp
         #test/test_reports.cpp
