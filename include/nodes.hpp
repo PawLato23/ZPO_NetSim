@@ -91,6 +91,7 @@ public:
     #if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
     ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
     #endif
+    IPackageQueue* get_queue() const { return q_.get();}
 private:
     ElementID id_;
     TimeOffset pd_;
