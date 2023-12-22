@@ -71,39 +71,21 @@ bool Factory::is_consistent(){
     return true;
 }
 
-struct ParsedLineData {
-    ElementID element_type;
-    std::map<std::string, std::string> parameters;
+
+enum Component {LOADING_RAMP, WORKER, STOREHOUSE, NODE};
+struct ParsedLineData{
+    Component TAG;
+    std::vector<std::map<std::string, std::string>> params;
 };
 
-ParsedLineData parse_line(const std::string& line) {
-    ParsedLineData parsed_data;
+ParsedLineData parse_line(std::string line){
+    ParsedLineData ParsLine;
+    // TO DO tutaj odczyt pierwszego wyrazu
+    std::string firseadagad;    //zmienić nazwę
+    if(firseadagad == "LOADING_RAMP") {
+        ParsLine.TAG = LOADING_RAMP;
+    }else if()
 
-    // Implementacja parsowania linii na ID i pary (klucz, wartość)
-    // ...
-
-    // Przykładowa implementacja parsowania:
-    std::istringstream iss(line);
-    std::string id;
-    iss >> id;
-
-    // Reszta linii traktowana jako pary (klucz, wartość)
-    std::map<std::string, std::string> parameters;
-    std::string token;
-    while (iss >> token) {
-        size_t pos = token.find('=');
-        if (pos != std::string::npos) {
-            std::string key = token.substr(0, pos);
-            std::string value = token.substr(pos + 1);
-            parameters[key] = value;
-        }
-    }
-
-    // Ustawienie danych w strukturze ParsedLineData
-    parsed_data.element_type = find_by_id(id);
-    parsed_data.parameters = parameters;
-
-    return parsed_data;
 }
 
 Factory load_factory_structure(std::istream& is) {
@@ -112,7 +94,7 @@ Factory load_factory_structure(std::istream& is) {
     std::string line;
     while (std::getline(is, line)) {
         // Pomijaj puste linie i linie zaczynające się od znaku komentarza
-        if (line.empty() || line[0] == '#') {
+        if (line.empty() || line[0] == '#' || line[0] == ';') {
             continue;
         }
 
@@ -121,14 +103,14 @@ Factory load_factory_structure(std::istream& is) {
 
         // W zależności od typu elementu wykonaj odpowiednie akcje
         switch (parsed_data.element_type) {
-            case NodeCollection::Ramp: {
+            case LOADING_RAMP: {
                 // Utwórz obiekt Ramp i dodaj do fabryki
                 Ramp ramp(parsed_data.parameters["ID"]);
                 // Możesz dodać obsługę dodatkowych parametrów Ramp
                 factory.add_ramp(ramp);
                 break;
             }
-            case NodeCollection::Worker: {
+            case WORKER: {
                 // Utwórz obiekt Worker i dodaj do fabryki
                 Worker worker(parsed_data.parameters["ID"],
                               std::stoi(parsed_data.parameters["ProcessingTime"]),
@@ -137,7 +119,7 @@ Factory load_factory_structure(std::istream& is) {
                 factory.add_worker(worker);
                 break;
             }
-            case NodeCollection::Storehouse: {
+            case STOREHOUSE: {
                 // Utwórz obiekt Storehouse i dodaj do fabryki
                 Storehouse storehouse(parsed_data.parameters["ID"]);
                 // Możesz dodać obsługę dodatkowych parametrów Storehouse
