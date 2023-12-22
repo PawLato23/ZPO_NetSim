@@ -71,45 +71,81 @@ bool Factory::is_consistent(){
     return true;
 }
 
-
-enum Component {LOADING_RAMP, WORKER, STOREHOUSE, NODE};
-struct ParsedLineData{
-    Component TAG;
-    std::map<std::string, std::string> params;
-};
-
 ParsedLineData parse_line(std::string line){
-    ParsedLineData ParsLine;
-    //Zmienienie linijki na odzdielne "wyrazy"
+    ParsedLineData ParsedLine;
+    std::vector<std::string> tokens;
+    std::string token;
     std::istringstream token_stream(line);
-    std::string *temp_str;
-    std::vector<std::string> parameters;
-    while(std::getline(token_stream, *temp_str, ' '))
-        parameters.push_back(*temp_str);
-    free( temp_str);
-    //zapis typu
-    if(parameters[0] == "LOADING_RAMP") {
-        ParsLine.TAG = LOADING_RAMP;
-    }else if(parameters[0] == "WORKER"){
-        ParsLine.TAG = WORKER;
-    }else if(parameters[0] == "STOREHOUSE"){
-        ParsLine.TAG = STOREHOUSE;
-    }else if(parameters[0] == "NODE")
-        throw "error during recognition -> check if word-type is correct";
-    //zapis pozostalych parametrow
-    std::string key;
-    std::string value;
-    for(auto& iter : parameters){
-        if(iter == parameters[0])
-            continue;
-        //oddzielenie klucz od wartości
-        std::istringstream key_value(iter);
-        std::getline(key_value, key, '=');
-        std::getline(key_value, value, '=');
-        //zapis do struktury ParsedLineData
-        ParsLine.params[key] = value;
+
+    while(std::getline(token_stream,token,' ')){
+        tokens.push_back(token);
     }
-    return (ParsLine);
+
+    if(tokens[0] == "LOADING_RAMP") {
+        ParsedLine.TAG = LOADING_RAMP;
+        // id
+        std::istringstream id_stream(tokens[1]);
+        std::string id;
+        while(std::getline(id_stream,id,'=')){}
+        // delivery-interval
+        std::istringstream interval_stream(tokens[2]);
+        std::string interval;
+        while(std::getline(interval_stream,interval,'=')){}
+
+        ParsedLine.params["id"] = id;
+        ParsedLine.params["delivery-interval"] = interval;
+    }
+
+    else if(tokens[0] == "WORKER"){
+        ParsedLine.TAG = WORKER;
+        // id
+        std::istringstream id_stream(tokens[1]);
+        std::string id;
+        while(std::getline(id_stream,id,'=')){}
+        // processing-time
+        std::istringstream time_stream(tokens[2]);
+        std::string time;
+        while(std::getline(time_stream,time,'=')){}
+        // queue-type
+        std::istringstream queue_stream(tokens[3]);
+        std::string queue;
+        while(std::getline(queue_stream,queue,'=')){}
+
+        ParsedLine.params["id"] = id;
+        ParsedLine.params["processing-time"] = time;
+        ParsedLine.params["queue-type"] = queue;
+    }
+
+    else if(tokens[0] == "STOREHOUSE"){
+        ParsedLine.TAG = STOREHOUSE;
+        // id
+        std::istringstream id_stream(tokens[1]);
+        std::string id;
+        while(std::getline(id_stream,id,'=')){}
+
+        ParsedLine.params["id"] = id;
+    }
+
+    else if(tokens[0] == "LINK"){
+        ParsedLine.TAG = LINK;
+        // src
+        std::istringstream src_stream(tokens[1]);
+        std::string src;
+        while(std::getline(src_stream,src,'=')){}
+        //dest
+        std::istringstream dest_stream(tokens[2]);
+        std::string dest;
+        while(std::getline(dest_stream,dest,'=')){}
+
+        ParsedLine.params["src"] = src;
+        ParsedLine.params["dest"] = dest;
+    }
+
+    else{
+        ParsedLine.TAG = NONE;
+    }
+
+    return ParsedLine;
 }
 
 Factory load_factory_structure(std::istream& is) {
@@ -117,90 +153,76 @@ Factory load_factory_structure(std::istream& is) {
 
     std::string line;
     while (std::getline(is, line)) {
-        // Pomijaj puste linie i linie zaczynające się od znaku komentarza
         if (line.empty() || line[0] == '#' || line[0] == ';') {
             continue;
         }
-
-        // Parsuj linię
         ParsedLineData parsed_data = parse_line(line);
 
-        // W zależności od typu elementu wykonaj odpowiednie akcje
-        switch (parsed_data.TAG) {
+        switch(parsed_data.TAG){
             case LOADING_RAMP: {
-                // Utwórz obiekt Ramp i dodaj do fabryki
-                Ramp ramp{(ElementID)stoi(parsed_data.params["id"]), (ElementID)stoi(parsed_data.params["delivery-interval"])};
-                // Możesz dodać obsługę dodatkowych parametrów Ramp
+                Ramp ramp(std::stoi(parsed_data.params["id"]), std::stoi(parsed_data.params["delivery-interval"]));
                 factory.add_ramp(std::move(ramp));
                 break;
             }
             case WORKER: {
-                // definicja bufora na półprodukty i jej typu
-                PackageQueueType qt;
-                if(parsed_data.params["queue-type"] == "FIFO")
-                    qt = PackageQueueType::FIFO;
-                else if(parsed_data.params["queue-type"] == "LIFO")
-                    qt = PackageQueueType::LIFO;
-
-                std::unique_ptr<IPackageQueue> q;
-
-                Worker worker((ElementID)stoi(parsed_data.params["id"]),
-                              (TimeOffset)stoi(parsed_data.params["processing-time"]),
-                              std::move(q));
-                // Możesz dodać obsługę dodatkowych parametrów Worker
-                factory.add_worker(std::move(worker));
+                if(parsed_data.params["queue-type"] == "FIFO"){
+                    Worker worker(std::stoi(parsed_data.params["id"]),std::stoi(parsed_data.params["processing-time"]),
+                                  std::make_unique<PackageQueue>(PackageQueueType::FIFO));
+                    factory.add_worker(std::move(worker));
+                }
+                if(parsed_data.params["queue-type"] == "LIFO"){
+                    Worker worker(std::stoi(parsed_data.params["id"]),std::stoi(parsed_data.params["processing-time"]),
+                                  std::make_unique<PackageQueue>(PackageQueueType::LIFO));
+                    factory.add_worker(std::move(worker));
+                }
                 break;
             }
-            case STOREHOUSE: {
-                // Utwórz obiekt Storehouse i dodaj do fabryki
+            case STOREHOUSE:{
                 Storehouse storehouse(std::stoi(parsed_data.params["id"]));
-                // Możesz dodać obsługę dodatkowych parametrów Storehouse
                 factory.add_storehouse(std::move(storehouse));
                 break;
             }
-            case LINK: {
-                std::istringstream link_fr(parsed_data.params["src"]);
-                std::istringstream link_to(parsed_data.params["dest"]);
-                std::string src_type, des_type, src_id, des_id;
-                //dzielenie na typ i id
-                std::getline(link_fr, src_type, '-');
-                std::getline(link_fr, src_id, '-');
-                std::getline(link_to, des_type, '-');
-                std::getline(link_to, des_id, '-');
-                //dodwanie połączeń
-                if(src_type == "LOADING_RAMP"){
-                    auto sender = factory.find_ramp_by_id((ElementID)stoi(src_id));
-                    if(des_type == "WORKER") {
-                        IPackageReceiver *reciver = factory.find_worker_by_id((ElementID) stoi(des_id)); //nw jak
-                        sender->receiver_preferences_.add_receiver(reciver);
+            case LINK:{
+                // src
+                std::istringstream src_stream(parsed_data.params["src"]);
+                std::string src;
+                std::vector<std::string> src_v;
+                while(std::getline(src_stream,src,'-')){src_v.push_back(src);}
+                // dest
+                std::istringstream dest_stream(parsed_data.params["dest"]);
+                std::string dest;
+                std::vector<std::string> dest_v;
+                while(std::getline(dest_stream,dest,'-')){dest_v.push_back(dest);}
+
+                if(src_v[0] == "ramp"){
+                    Ramp& r = *(factory.find_ramp_by_id(std::stoi(src_v[1])));
+                    if(dest_v[0] == "worker"){
+                        r.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(std::stoi(dest_v[1]))));
+
                     }
-                    else if(des_type == "STOREHOUSE"){
-                        IPackageReceiver *reciver = factory.find_storehouse_by_id((ElementID) stoi(des_id)); //nw jak
-                        sender->receiver_preferences_.add_receiver(reciver);
+                    else if(dest_v[0] == "store"){
+                        r.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(std::stoi(dest_v[1]))));
+
                     }
-                } else if(src_type == "WORKER") {
-                    auto sender = factory.find_worker_by_id((ElementID) stoi(src_id));
-                    if (des_type == "WORKER") {
-                        IPackageReceiver *reciver = factory.find_worker_by_id((ElementID) stoi(des_id)); //nw jak
-                        sender->receiver_preferences_.add_receiver(reciver);
-                    } else if (des_type == "STOREHOUSE") {
-                        IPackageReceiver *reciver = factory.find_worker_by_id((ElementID) stoi(des_id)); //nw jak
-                        sender->receiver_preferences_.add_receiver(reciver);
+                }
+
+                if(src_v[0] == "worker"){
+                    Worker& w = *(factory.find_worker_by_id(std::stoi(src_v[1])));
+                    if(dest_v[0] == "worker"){
+                        w.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(std::stoi(dest_v[1]))));
                     }
-                    break;
+                    else if(dest_v[0] == "store"){
+                        w.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(std::stoi(dest_v[1]))));
+                    }
                 }
             }
-                default:{
-                        // Nieznany typ, można obsłużyć błąd lub pominąć zależnie od potrzeb
-                        std::cerr << "Unknown element type" << std::endl;
-                }
+            case NONE:
+                break;
         }
 
     }
-    if(factory.is_consistent())
-        return factory;
-    else
-        throw "ajaj";
+
+    return factory;
 }
 
 void save_factory_structure(Factory& factory, std::ostream& os){
