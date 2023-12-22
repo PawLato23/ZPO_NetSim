@@ -226,39 +226,59 @@ Factory load_factory_structure(std::istream& is) {
 }
 
 void save_factory_structure(Factory& factory, std::ostream& os){
-    os << "== LOADING RAMPS ==\n \n";
+    os << "; == LOADING RAMPS ==\n \n";
     for(auto i = factory.ramp_cbegin(); i != factory.ramp_cend(); ++i) {
         const auto &ramp = *i;
-        os << "LOADING RAMP #" << ramp.get_id() << "\n";
-        os << "Delivery interval: " << ramp.get_delivery_interval()<< "\n";
-        std::map<IPackageReceiver *, double> vector = ramp.receiver_preferences_.get_preferences();
-        os << "Receivers: \n";
-        for(auto j = vector.begin(); j != vector.end(); ++j){
-            os << "    worker: " << j->first << "\n";
-        }
+        os << "LOADING_RAMP id=" << ramp.get_id() << " delivery-interval=" << ramp.get_delivery_interval() << "\n";
     }
-    os << "== WORKERS == \n";
+
+    os << "\n; == WORKERS == \n\n";
     for(auto i = factory.worker_cbegin(); i != factory.worker_cend(); ++i){
         const auto& worker = *i;
-        os << "  Processing time: " << worker.get_package_processing_start_time() << "\n";
-        os << "  Queue type: " ;
-        std::map<IPackageReceiver *, double> vector worker.receiver_preferences_.get_preferences();
-        os << "Receivers: \n";
-        for(auto j = vector.begin(); j != vector.end(); ++j){
-            os << "    worker: " << j->first << "\n";
+        os << "WORKER id=" << worker.get_id() << " processing-time=" << worker.get_processing_duration();
+        if(worker.get_queue()->get_queue_type() == PackageQueueType::FIFO){
+            os << " queue-type=FIFO\n";
+        }
+        else if(worker.get_queue()->get_queue_type() == PackageQueueType::LIFO){
+            os << " queue-type=LIFO\n";
         }
     }
-    os << "== STOREHOUSES == \n";
+
+    os << "\n; == STOREHOUSES == \n\n";
     for(auto i = factory.storehouse_cbegin(); i != factory.storehouse_cend(); ++i) {
         const auto &storehouse = *i;
-        os << "STOREHOUSE #" << storehouse.get_id() << "\n";
-        /*os << "  Stock: ";
-        for(auto j = storehouse.cbegin(); j != storehouse.cend(); ++j){
-            const auto &elem = *j;
-            os <<" #" << elem.get_id();
-            if (j != storehouse.cend()--){
-                os << ",";
-            }
-        }*/
+        os << "STOREHOUSE id=" << storehouse.get_id() << "\n";
     }
+
+    os << "\n; == LINKS ==\n\n";
+    for(auto i = factory.ramp_cbegin(); i != factory.ramp_cend(); ++i) {
+        const auto &ramp = *i;
+        for(auto rec : ramp.receiver_preferences_.get_preferences()){
+            os << "LINK src=ramp-" << ramp.get_id() << " dest=";
+            if (rec.first->get_receiver_type() == ReceiverType::WORKER){
+                os << "worker-" << rec.first->get_id() << "\n";
+            }
+            else if(rec.first->get_receiver_type() == ReceiverType::STOREHOUSE){
+                os << "storehouse-" << rec.first->get_id() << "\n";
+            }
+        }
+        os << "\n";
+    }
+    for(auto i = factory.worker_cbegin(); i != factory.worker_cend(); ++i) {
+        const auto &worker = *i;
+        for(auto rec : worker.receiver_preferences_.get_preferences()){
+            os << "LINK src=worker-" << worker.get_id() << " dest=";
+            if (rec.first->get_receiver_type() == ReceiverType::WORKER){
+                os << "worker-" << rec.first->get_id() << "\n";
+            }
+            else if(rec.first->get_receiver_type() == ReceiverType::STOREHOUSE){
+                os << "store-" << rec.first->get_id() << "\n";
+            }
+        }
+        if(i==factory.worker_cend()-1){
+            continue;
+        }
+        os << "\n";
+    }
+
 }
