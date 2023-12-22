@@ -160,5 +160,8 @@ Factory load_factory_structure(std::istream& is) {
 }
 
 void save_factory_structure(Factory& factory, std::ostream& os){
+    for(auto i = factory.worker_cbegin(); i != factory.worker_cend(); ++i){
+        const auto& worker = *i;
 
+    }
 }
