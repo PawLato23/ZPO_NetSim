@@ -232,14 +232,21 @@ void save_factory_structure(Factory& factory, std::ostream& os){
         os << "LOADING RAMP #" << ramp.get_id() << "\n";
         os << "Delivery interval: " << ramp.get_delivery_interval()<< "\n";
         std::map<IPackageReceiver *, double> vector = ramp.receiver_preferences_.get_preferences();
-        os << "Receivers: \n" << ;
+        os << "Receivers: \n";
+        for(auto j = vector.begin(); j != vector.end(); ++j){
+            os << "    worker: " << j->first << "\n";
+        }
     }
     os << "== WORKERS == \n";
     for(auto i = factory.worker_cbegin(); i != factory.worker_cend(); ++i){
         const auto& worker = *i;
-        worker.get_package_processing_start_time();
-        worker.receiver_preferences_.get_preferences();
-
+        os << "  Processing time: " << worker.get_package_processing_start_time() << "\n";
+        os << "  Queue type: " ;
+        std::map<IPackageReceiver *, double> vector worker.receiver_preferences_.get_preferences();
+        os << "Receivers: \n";
+        for(auto j = vector.begin(); j != vector.end(); ++j){
+            os << "    worker: " << j->first << "\n";
+        }
     }
     os << "== STOREHOUSES == \n";
     for(auto i = factory.storehouse_cbegin(); i != factory.storehouse_cend(); ++i) {
