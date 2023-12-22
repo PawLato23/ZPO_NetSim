@@ -80,14 +80,15 @@ struct ParsedLineData{
 
 ParsedLineData parse_line(std::string line){
     ParsedLineData ParsLine;
-    std::string id;    
-    if(id == "LOADING_RAMP") {
+    std::string parameters;
+    if(parameters == "LOADING_RAMP") {
         ParsLine.TAG = LOADING_RAMP;
-    }else if(id == "WORKER"){
+    }else if(parameters == "WORKER"){
         ParsLine.TAG = WORKER;
-    }else if(id == "STOREHOUSE"){
+    }else if(parameters == "STOREHOUSE"){
         ParsLine.TAG = STOREHOUSE;
-    }
+    }else if(parameters == "NODE")
+        ParsLine.TAG = NAN;
     return (ParsLine);
 }
 
