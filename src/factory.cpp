@@ -80,12 +80,15 @@ struct ParsedLineData{
 
 ParsedLineData parse_line(std::string line){
     ParsedLineData ParsLine;
-    // TO DO tutaj odczyt pierwszego wyrazu
-    std::string firseadagad;    //zmienić nazwę
-    if(firseadagad == "LOADING_RAMP") {
+    std::string id;    
+    if(id == "LOADING_RAMP") {
         ParsLine.TAG = LOADING_RAMP;
-    }else if()
-
+    }else if(id == "WORKER"){
+        ParsLine.TAG = WORKER;
+    }else if(id == "STOREHOUSE"){
+        ParsLine.TAG = STOREHOUSE;
+    }
+    return (ParsLine);
 }
 
 Factory load_factory_structure(std::istream& is) {
