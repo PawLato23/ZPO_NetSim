@@ -145,9 +145,9 @@ Factory load_factory_structure(std::istream& is) {
             }
             case STOREHOUSE: {
                 // Utwórz obiekt Storehouse i dodaj do fabryki
-                Storehouse storehouse(parsed_data.parameters["ID"]);
+                Storehouse storehouse(std::stoi(parsed_data.params["id"]));
                 // Możesz dodać obsługę dodatkowych parametrów Storehouse
-                factory.add_storehouse(storehouse);
+                factory.add_storehouse(std::move(storehouse));
                 break;
             }
             default:
