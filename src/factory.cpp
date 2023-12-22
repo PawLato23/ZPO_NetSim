@@ -126,21 +126,29 @@ Factory load_factory_structure(std::istream& is) {
         ParsedLineData parsed_data = parse_line(line);
 
         // W zależności od typu elementu wykonaj odpowiednie akcje
-        switch (parsed_data.element_type) {
+        switch (parsed_data.TAG) {
             case LOADING_RAMP: {
                 // Utwórz obiekt Ramp i dodaj do fabryki
-                Ramp ramp(parsed_data.parameters["ID"]);
+                Ramp ramp{(ElementID)stoi(parsed_data.params["id"]), (ElementID)stoi(parsed_data.params["delivery-interval"])};
                 // Możesz dodać obsługę dodatkowych parametrów Ramp
-                factory.add_ramp(ramp);
+                factory.add_ramp(std::move(ramp));
                 break;
             }
             case WORKER: {
-                // Utwórz obiekt Worker i dodaj do fabryki
-                Worker worker(parsed_data.parameters["ID"],
-                              std::stoi(parsed_data.parameters["ProcessingTime"]),
-                              std::stoi(parsed_data.parameters["DeliveryInterval"]));
+                // definicja bufora na półprodukty i jej typu
+                PackageQueueType qt;
+                if(parsed_data.params["queue-type"] == "FIFO")
+                    qt = PackageQueueType::FIFO;
+                else if(parsed_data.params["queue-type"] == "LIFO")
+                    qt = PackageQueueType::LIFO;
+
+                std::unique_ptr<IPackageQueue> q;
+
+                Worker worker((ElementID)stoi(parsed_data.params["id"]),
+                              (TimeOffset)stoi(parsed_data.params["processing-time"]),
+                              std::move(q));
                 // Możesz dodać obsługę dodatkowych parametrów Worker
-                factory.add_worker(worker);
+                factory.add_worker(std::move(worker));
                 break;
             }
             case STOREHOUSE: {
@@ -150,13 +158,49 @@ Factory load_factory_structure(std::istream& is) {
                 factory.add_storehouse(std::move(storehouse));
                 break;
             }
-            default:
-                // Nieznany typ, można obsłużyć błąd lub pominąć zależnie od potrzeb
-                std::cerr << "Unknown element type" << std::endl;
+            case LINK: {
+                std::istringstream link_fr(parsed_data.params["src"]);
+                std::istringstream link_to(parsed_data.params["dest"]);
+                std::string src_type, des_type, src_id, des_id;
+                //dzielenie na typ i id
+                std::getline(link_fr, src_type, '-');
+                std::getline(link_fr, src_id, '-');
+                std::getline(link_to, des_type, '-');
+                std::getline(link_to, des_id, '-');
+                //dodwanie połączeń
+                if(src_type == "LOADING_RAMP"){
+                    auto sender = factory.find_ramp_by_id((ElementID)stoi(src_id));
+                    if(des_type == "WORKER") {
+                        IPackageReceiver *reciver = factory.find_worker_by_id((ElementID) stoi(des_id)); //nw jak
+                        sender->receiver_preferences_.add_receiver(reciver);
+                    }
+                    else if(des_type == "STOREHOUSE"){
+                        IPackageReceiver *reciver = factory.find_storehouse_by_id((ElementID) stoi(des_id)); //nw jak
+                        sender->receiver_preferences_.add_receiver(reciver);
+                    }
+                } else if(src_type == "WORKER") {
+                    auto sender = factory.find_worker_by_id((ElementID) stoi(src_id));
+                    if (des_type == "WORKER") {
+                        IPackageReceiver *reciver = factory.find_worker_by_id((ElementID) stoi(des_id)); //nw jak
+                        sender->receiver_preferences_.add_receiver(reciver);
+                    } else if (des_type == "STOREHOUSE") {
+                        IPackageReceiver *reciver = factory.find_worker_by_id((ElementID) stoi(des_id)); //nw jak
+                        sender->receiver_preferences_.add_receiver(reciver);
+                    }
+                    break;
+                }
+            }
+                default:{
+                        // Nieznany typ, można obsłużyć błąd lub pominąć zależnie od potrzeb
+                        std::cerr << "Unknown element type" << std::endl;
+                }
         }
-    }
 
-    return factory;
+    }
+    if(factory.is_consistent())
+        return factory;
+    else
+        throw "ajaj";
 }
 
 
