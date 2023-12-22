@@ -159,9 +159,31 @@ Factory load_factory_structure(std::istream& is) {
     return factory;
 }
 
+
 void save_factory_structure(Factory& factory, std::ostream& os){
+    for(auto i = factory.ramp_cbegin(); i != factory.ramp_cend(); ++i) {
+        const auto &ramp = *i;
+        ramp.get_delivery_interval();
+        ramp.receiver_preferences_.get_preferences();
+    }
+    os << "== WORKERS == \n";
     for(auto i = factory.worker_cbegin(); i != factory.worker_cend(); ++i){
         const auto& worker = *i;
+        worker.get_package_processing_start_time();
+        worker.receiver_preferences_.get_preferences();
 
+    }
+    os << "== STOREHOUSES == \n";
+    for(auto i = factory.storehouse_cbegin(); i != factory.storehouse_cend(); ++i) {
+        const auto &storehouse = *i;
+        os << "STOREHOUSE #" << storehouse.get_id() << "\n";
+        /*os << "  Stock: ";
+        for(auto j = storehouse.cbegin(); j != storehouse.cend(); ++j){
+            const auto &elem = *j;
+            os <<" #" << elem.get_id();
+            if (j != storehouse.cend()--){
+                os << ",";
+            }
+        }*/
     }
 }
