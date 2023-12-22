@@ -88,4 +88,14 @@ private:
     NodeCollection<Storehouse> _Storehouse_collection;
 };
 
+enum Component {LOADING_RAMP, WORKER, STOREHOUSE, LINK, NONE};
+
+struct ParsedLineData{
+    Component TAG;
+    std::map<std::string, std::string> params;
+};
+
+Factory load_factory_structure(std::istream& is);
+void save_factory_structure(Factory& factory, std::ostream& os);
+ParsedLineData parse_line(std::string line);
 #endif //NETSIM_FACTORY_HPP
