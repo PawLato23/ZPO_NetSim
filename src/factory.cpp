@@ -75,20 +75,40 @@ bool Factory::is_consistent(){
 enum Component {LOADING_RAMP, WORKER, STOREHOUSE, NODE};
 struct ParsedLineData{
     Component TAG;
-    std::vector<std::map<std::string, std::string>> params;
+    std::map<std::string, std::string> params;
 };
 
 ParsedLineData parse_line(std::string line){
     ParsedLineData ParsLine;
-    std::string parameters;
-    if(parameters == "LOADING_RAMP") {
+    //Zmienienie linijki na odzdielne "wyrazy"
+    std::istringstream token_stream(line);
+    std::string *temp_str;
+    std::vector<std::string> parameters;
+    while(std::getline(token_stream, *temp_str, ' '))
+        parameters.push_back(*temp_str);
+    free( temp_str);
+    //zapis typu
+    if(parameters[0] == "LOADING_RAMP") {
         ParsLine.TAG = LOADING_RAMP;
-    }else if(parameters == "WORKER"){
+    }else if(parameters[0] == "WORKER"){
         ParsLine.TAG = WORKER;
-    }else if(parameters == "STOREHOUSE"){
+    }else if(parameters[0] == "STOREHOUSE"){
         ParsLine.TAG = STOREHOUSE;
-    }else if(parameters == "NODE")
-        ParsLine.TAG = NAN;
+    }else if(parameters[0] == "NODE")
+        throw "error during recognition -> check if word-type is correct";
+    //zapis pozostalych parametrow
+    std::string key;
+    std::string value;
+    for(auto& iter : parameters){
+        if(iter == parameters[0])
+            continue;
+        //oddzielenie klucz od wartości
+        std::istringstream key_value(iter);
+        std::getline(key_value, key, '=');
+        std::getline(key_value, value, '=');
+        //zapis do struktury ParsedLineData
+        ParsLine.params[key] = value;
+    }
     return (ParsLine);
 }
 
