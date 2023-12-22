@@ -203,12 +203,14 @@ Factory load_factory_structure(std::istream& is) {
         throw "ajaj";
 }
 
-
 void save_factory_structure(Factory& factory, std::ostream& os){
+    os << "== LOADING RAMPS ==\n \n";
     for(auto i = factory.ramp_cbegin(); i != factory.ramp_cend(); ++i) {
         const auto &ramp = *i;
-        ramp.get_delivery_interval();
-        ramp.receiver_preferences_.get_preferences();
+        os << "LOADING RAMP #" << ramp.get_id() << "\n";
+        os << "Delivery interval: " << ramp.get_delivery_interval()<< "\n";
+        std::map<IPackageReceiver *, double> vector = ramp.receiver_preferences_.get_preferences();
+        os << "Receivers: \n" << ;
     }
     os << "== WORKERS == \n";
     for(auto i = factory.worker_cbegin(); i != factory.worker_cend(); ++i){
