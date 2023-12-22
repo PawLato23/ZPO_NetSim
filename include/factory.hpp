@@ -3,6 +3,8 @@
 
 #include "nodes.hpp"
 #include <memory>
+#include <iostream>
+#include <sstream>
 
 template <typename Node> class NodeCollection{
 public:
