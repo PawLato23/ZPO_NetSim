@@ -92,6 +92,7 @@ public:
     ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
     #endif
     IPackageQueue* get_queue() const { return q_.get();}
+    std::optional<Package>& get_processing_buffer() const {};
 private:
     ElementID id_;
     TimeOffset pd_;
