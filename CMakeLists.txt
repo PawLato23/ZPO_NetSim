@@ -19,7 +19,7 @@ set(SOURCE_FILES
         )
 
 add_executable(NetSim ${SOURCE_FILES} main.cpp)
-target_compile_definitions(NetSim PUBLIC EXERCISE_ID=EXERCISE_ID_FACTORY)
+target_compile_definitions(NetSim PUBLIC EXERCISE_ID=SIMULATION )
 
 # Google Testing Framework
 
@@ -29,15 +29,15 @@ set(SOURCES_FILES_TESTS
         test/test_nodes.cpp
         test/test_package.cpp
         test/test_reports.cpp
-        #test/test_simulate.cpp
+        test/test_simulate.cpp
         test/test_storage_types.cpp
         )
 
 add_subdirectory(googletest-master)
 
-set(EXECUTABLE_NAME NetSim_factory)
+set(EXECUTABLE_NAME NetSim_reportsANDsimulation)
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES} ${SOURCES_FILES_TESTS} test/main_gtest.cpp)
-target_compile_definitions(${EXECUTABLE_NAME} PUBLIC EXERCISE_ID=EXERCISE_ID_FACTORY)
+target_compile_definitions(${EXECUTABLE_NAME} PUBLIC EXERCISE_ID=SIMULATION )
 
 target_include_directories(${EXECUTABLE_NAME} PUBLIC
         googletest-master/googlemock/include
