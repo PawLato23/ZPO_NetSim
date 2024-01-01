@@ -48,7 +48,85 @@ void generate_structure_report(const Factory& f, std::ostream& os){
     os << "\n";
 }
 
+void generate_simulation_turn_report(const Factory& f, std::ostream& os, Time t){
+    os << "=== [ Turn: " << t << " ] ===";
+    
+    os << "\n\n== WORKERS ==\n";
+    for(auto w = f.worker_cbegin(); w != f.worker_cend(); w++){
+        const auto &worker = *w;
+        os << "\nWORKER #" << worker.get_id() << "\n";
+            //PBUFFER
+        os << "  PBuffer: ";
+        if(worker.get_processing_buffer())
+            os << '#' << worker.get_processing_buffer()->get_id() << ' ' << "(pt = " << 1+t-worker.get_package_processing_start_time() << ")";
+        else
+            os << "(empty)";
+            //QUEUE
+        os << "\n  Queue:";
+        if(worker.get_queue()->size() > 0) {
+            for (auto it = worker.cbegin(); it != worker.cend(); ++it) {
+                os << " #" << it->get_id();
+                if (std::next(it, 1) != worker.cend())
+                    os << ',';
+            }
+        } else {
+            os << " (empty)";
+        }
+            //SBUFFER
+        os << "\n  SBuffer: ";
+        if(worker.get_sending_buffer())
+            os << '#' << worker.get_sending_buffer()->get_id() << '\n';
+        else
+            os << "(empty)\n";
+    }
+    /*
+    os << "\n\n== WORKERS ==\n";
+    for(auto w = f.worker_cbegin(); w != f.worker_cend(); w++){
+        const auto &worker = *w;
+        os << "\nWORKER #" << worker.get_id() << "\n";
+            //PBUFFER
+        os << "  PBuffer: ";
+        if(worker.get_sending_buffer())
+            os << '#' << worker.get_sending_buffer()->get_id() << ' ' << "(pt = " << 1+t-worker.get_package_processing_start_time() << ")";
+        else
+            os << "(empty)";
+            //QUEUE
+        os << "\n  Queue:";
+        if(worker.get_queue()->size() > 0) {
+            for (auto it = worker.cbegin(); it != worker.cend(); ++it) {
+                os << " #" << it->get_id();
+                if (std::next(it, 1) != worker.cend())
+                    os << ',';
+            }
+        } else {
+            os << " (empty)";
+        }
+            //SBUFFER
+        os << "\n  SBuffer: ";
+        if(worker.get_processing_buffer())
+            os << '#' << worker.get_processing_buffer()->get_id() << '\n';
+        else
+            os << "(empty)\n";
+    }
+    */
 
+    os << "\n\n== STOREHOUSES ==\n";
+    for(auto s = f.storehouse_cbegin(); s != f.storehouse_cend();s++){
+        auto &store = *s;
+        os << "\nSTOREHOUSE #" << store.get_id() << "\n";
+        os << "  Stock:";
+        if(store.cbegin() != store.cend()) {
+            for (auto elem = store.cbegin(); elem != store.cend(); ++elem) {
+                os << " #" << elem->get_id();
+                if (std::next(elem, 1) != store.cend())
+                    os << ',';
+            }
+        } else {
+            os << " (empty)";
+        }
+    }
+    os << "\n\n";
+}
 
 class IntervalReportNotifier{
 public:
