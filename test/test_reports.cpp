@@ -368,3 +368,69 @@ TEST(ReportsTest, TurnReportPackageInStock) {
 
     perform_turn_report_check(factory, t, expected_report_lines);
 }
+TEST(ReportsTest, StructureReport_R2W2S2_v2){
+    Factory factory;
+
+    factory.add_ramp(Ramp(2, 2));
+    factory.add_ramp(Ramp(1, 1));
+    factory.add_worker(Worker(2, 10, std::make_unique<PackageQueue>(PackageQueueType::LIFO)));
+    factory.add_worker(Worker(1, 10, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    factory.add_storehouse(Storehouse(2));
+    factory.add_storehouse(Storehouse(1));
+
+    Ramp& r1 = *(factory.find_ramp_by_id(2));
+    r1.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(1)));
+    Ramp& r2 = *(factory.find_ramp_by_id(1));
+    r2.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(2)));
+
+    Worker& w1 = *(factory.find_worker_by_id(1));
+    w1.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(1)));
+    w1.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(2)));
+    w1.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(2)));
+
+    Worker& w2 = *(factory.find_worker_by_id(2));
+    w2.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(1)));
+
+
+    std::vector<std::string> expected_report_lines{
+            "",
+            "== LOADING RAMPS ==",
+            "",
+            "LOADING RAMP #1",
+            "  Delivery interval: 1",
+            "  Receivers:",
+            "    worker #1",
+            "",
+            "LOADING RAMP #2",
+            "  Delivery interval: 2",
+            "  Receivers:",
+            "    worker #2",
+            "",
+            "",
+            "== WORKERS ==",
+            "",
+            "WORKER #1",
+            "  Processing time: 10",
+            "  Queue type: FIFO",
+            "  Receivers:",
+            "    storehouse #1",
+            "    storehouse #2",
+            "    worker #2",
+            "",
+            "WORKER #2",
+            "  Processing time: 10",
+            "  Queue type: LIFO",
+            "  Receivers:",
+            "    storehouse #1",
+            "",
+            "",
+            "== STOREHOUSES ==",
+            "",
+            "STOREHOUSE #1",
+            "",
+            "STOREHOUSE #2",
+            "",
+    };
+
+    perform_structure_report_check(factory, expected_report_lines);
+}
