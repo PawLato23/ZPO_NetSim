@@ -371,22 +371,27 @@ TEST(ReportsTest, TurnReportPackageInStock) {
 TEST(ReportsTest, StructureReport_R2W2S2_v2){
     Factory factory;
 
-    factory.add_ramp(Ramp(2, 2));
-    factory.add_ramp(Ramp(1, 1));
+    factory.add_ramp(Ramp(2, 1));
+    factory.add_ramp(Ramp(1, 2));
     factory.add_worker(Worker(2, 10, std::make_unique<PackageQueue>(PackageQueueType::LIFO)));
     factory.add_worker(Worker(1, 10, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
     factory.add_storehouse(Storehouse(2));
     factory.add_storehouse(Storehouse(1));
 
     Ramp& r1 = *(factory.find_ramp_by_id(2));
+    r1.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(2)));
     r1.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(1)));
+    r1.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(1)));
     Ramp& r2 = *(factory.find_ramp_by_id(1));
     r2.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(2)));
-
+    r2.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(2)));
     Worker& w1 = *(factory.find_worker_by_id(1));
+
     w1.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(1)));
     w1.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(2)));
+    w1.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(1)));
     w1.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(2)));
+
 
     Worker& w2 = *(factory.find_worker_by_id(2));
     w2.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(1)));
@@ -397,13 +402,16 @@ TEST(ReportsTest, StructureReport_R2W2S2_v2){
             "== LOADING RAMPS ==",
             "",
             "LOADING RAMP #1",
-            "  Delivery interval: 1",
-            "  Receivers:",
-            "    worker #1",
-            "",
-            "LOADING RAMP #2",
             "  Delivery interval: 2",
             "  Receivers:",
+            "    storehouse #1",
+            "    worker #1",
+            "    worker #2",
+            "",
+            "LOADING RAMP #2",
+            "  Delivery interval: 1",
+            "  Receivers:",
+            "    storehouse #2",
             "    worker #2",
             "",
             "",
@@ -415,6 +423,7 @@ TEST(ReportsTest, StructureReport_R2W2S2_v2){
             "  Receivers:",
             "    storehouse #1",
             "    storehouse #2",
+            "    worker #1",
             "    worker #2",
             "",
             "WORKER #2",
