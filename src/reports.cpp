@@ -50,7 +50,7 @@ void generate_structure_report(const Factory& f, std::ostream& os){
         os << "\nWORKER #" << work_vector[counter] << "\n";
         os << "  Processing time: " << f.find_worker_by_id(work_vector[counter])->get_processing_duration() << "\n";
         os << "  Queue type: ";
-        for (auto& rec: f.find_ramp_by_id(work_vector[counter])->receiver_preferences_.get_preferences()) {
+        for (auto& rec: f.find_worker_by_id(work_vector[counter])->receiver_preferences_.get_preferences()) {
             if (rec.first->get_receiver_type() == ReceiverType::STOREHOUSE) {
                 store_2.push_back(rec.first->get_id());
             }
